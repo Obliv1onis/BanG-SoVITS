@@ -1,0 +1,87 @@
+diff --git a/GPT_SoVITS/TTS_infer_pack/TTS.py b/GPT_SoVITS/TTS_infer_pack/TTS.py
+--- a/GPT_SoVITS/TTS_infer_pack/TTS.py
++++ b/GPT_SoVITS/TTS_infer_pack/TTS.py
+@@ -491,6 +491,14 @@ class TTS:
+             self.bert_model = self.bert_model.half()
+ 
+     def init_vits_weights(self, weights_path: str):
++        if getattr(self, "vits_model", None) is not None and os.path.abspath(str(self.configs.vits_weights_path)) == os.path.abspath(weights_path):
++            return
++        old_vits = getattr(self, "vits_model", None)
++        self.vits_model = None
++        if old_vits is not None:
++            old_vits.cpu()
++            del old_vits
++            self.empty_cache()
+         self.configs.vits_weights_path = weights_path
+         version, model_version, if_lora_v3 = get_sovits_version_from_path_fast(weights_path)
+         if "Pro" in model_version:
+@@ -592,7 +600,15 @@ class TTS:
+ 
+ 
+     def init_t2s_weights(self, weights_path: str):
++        if getattr(self, "t2s_model", None) is not None and os.path.abspath(str(self.configs.t2s_weights_path)) == os.path.abspath(weights_path):
++            return
+         print(f"Loading Text2Semantic weights from {weights_path}")
++        old_t2s = getattr(self, "t2s_model", None)
++        self.t2s_model = None
++        if old_t2s is not None:
++            old_t2s.cpu()
++            del old_t2s
++            self.empty_cache()
+         self.configs.t2s_weights_path = weights_path
+         self.configs.save_configs()
+         self.configs.hz = 50
+diff --git a/GPT_SoVITS/configs/tts_infer.yaml b/GPT_SoVITS/configs/tts_infer.yaml
+--- a/GPT_SoVITS/configs/tts_infer.yaml
++++ b/GPT_SoVITS/configs/tts_infer.yaml
+@@ -1,11 +1,11 @@
+ custom:
+   bert_base_path: GPT_SoVITS/pretrained_models/chinese-roberta-wwm-ext-large
+   cnhuhbert_base_path: GPT_SoVITS/pretrained_models/chinese-hubert-base
+-  device: cuda
+-  is_half: true
+-  t2s_weights_path: GPT_SoVITS/pretrained_models/gsv-v2final-pretrained/s1bert25hz-5kh-longer-epoch=12-step=369668.ckpt
+-  version: v2
+-  vits_weights_path: GPT_SoVITS/pretrained_models/gsv-v2final-pretrained/s2G2333k.pth
++  device: cpu
++  is_half: false
++  t2s_weights_path: GPT_SoVITS/pretrained_models/s1v3.ckpt
++  version: v2ProPlus
++  vits_weights_path: GPT_SoVITS/pretrained_models/v2Pro/s2Gv2ProPlus.pth
+ v1:
+   bert_base_path: GPT_SoVITS/pretrained_models/chinese-roberta-wwm-ext-large
+   cnhuhbert_base_path: GPT_SoVITS/pretrained_models/chinese-hubert-base
+diff --git a/api_v2.py b/api_v2.py
+--- a/api_v2.py
++++ b/api_v2.py
+@@ -442,7 +442,8 @@ async def tts_handle(req: dict):
+             audio_data = pack_audio(BytesIO(), audio_data, sr, media_type).getvalue()
+             return Response(audio_data, media_type=f"audio/{media_type}")
+     except Exception as e:
+-        return JSONResponse(status_code=400, content={"message": "tts failed", "Exception": str(e)})
++        traceback.print_exc()
++        return JSONResponse(status_code=400, content={"message": "tts failed", "Exception": f"{type(e).__name__}: {e!r}"})
+ 
+ 
+ @APP.get("/control")
+@@ -549,7 +550,8 @@ async def set_gpt_weights(weights_path: str = None):
+             return JSONResponse(status_code=400, content={"message": "gpt weight path is required"})
+         tts_pipeline.init_t2s_weights(weights_path)
+     except Exception as e:
+-        return JSONResponse(status_code=400, content={"message": "change gpt weight failed", "Exception": str(e)})
++        traceback.print_exc()
++        return JSONResponse(status_code=400, content={"message": "change gpt weight failed", "Exception": f"{type(e).__name__}: {e!r}"})
+ 
+     return JSONResponse(status_code=200, content={"message": "success"})
+ 
+@@ -561,7 +563,8 @@ async def set_sovits_weights(weights_path: str = None):
+     try:
+         if weights_path in ["", None]:
+             return JSONResponse(status_code=400, content={"message": "sovits weight path is required"})
+         tts_pipeline.init_vits_weights(weights_path)
+     except Exception as e:
+-        return JSONResponse(status_code=400, content={"message": "change sovits weight failed", "Exception": str(e)})
++        traceback.print_exc()
++        return JSONResponse(status_code=400, content={"message": "change sovits weight failed", "Exception": f"{type(e).__name__}: {e!r}"})
+     return JSONResponse(status_code=200, content={"message": "success"})

@@ -1,0 +1,9 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "BanG Voice Studio",
+  "version": "0.2.0",
+  "identifier": "studio.bangdream.voice",
+  "build": {"beforeDevCommand":"npm run dev","devUrl":"http://127.0.0.1:1420","beforeBuildCommand":"npm run build","frontendDist":"../dist"},
+  "app": {"windows":[{"title":"BanG Voice Studio","width":1180,"height":760,"minWidth":760,"minHeight":620,"center":true,"titleBarStyle":"Overlay","hiddenTitle":true}],"security":{"csp":"default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; media-src 'self' asset: http://asset.localhost; connect-src 'self' http://127.0.0.1:9880 ipc: http://ipc.localhost","assetProtocol":{"enable":true,"scope":["**"]}}},
+  "bundle": {"active":true,"targets":["app","dmg"],"icon":["icons/32x32.png","icons/128x128.png","icons/128x128@2x.png","icons/icon.icns","icons/icon.ico"],"resources":{"../engine/.venv/":"engine/.venv/","../engine/GPT_SoVITS/":"engine/GPT_SoVITS/","../engine/tools/":"engine/tools/","../engine/api_v2.py":"engine/api_v2.py","../engine/config.py":"engine/config.py","../engine/requirements.txt":"engine/requirements.txt","../models/GPT_weights_v2ProPlus/":"engine/GPT_weights_v2ProPlus/","../models/SoVITS_weights_v2ProPlus/":"engine/SoVITS_weights_v2ProPlus/","../models/pretrained_models/":"engine/GPT_SoVITS/pretrained_models/","../角色语音/":"角色语音/"},"macOS":{"minimumSystemVersion":"12.0"}}
+}

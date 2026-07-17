@@ -1,0 +1,11 @@
+node_modules/
+dist/
+src-tauri/target/
+engine/
+models/
+角色语音/
+release/
+*.dmg
+*.app
+.DS_Store
+*.log

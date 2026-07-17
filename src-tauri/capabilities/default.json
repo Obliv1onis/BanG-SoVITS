@@ -1,0 +1,1 @@
+{"identifier":"default","description":"Desktop app capabilities","windows":["main"],"permissions":["core:default","shell:allow-open","dialog:allow-save"]}

@@ -1,0 +1,24 @@
+[package]
+name = "bangdream-voice-studio"
+version = "0.2.0"
+description = "BanG Dream character voice studio powered by GPT-SoVITS"
+authors = ["BanG Voice Studio"]
+edition = "2021"
+
+[lib]
+name = "bangdream_voice_studio_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["protocol-asset"] }
+tauri-plugin-shell = "2"
+tauri-plugin-dialog = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+reqwest = { version = "0.12", features = ["json"] }
+tokio = { version = "1", features = ["process", "time", "macros", "rt-multi-thread"] }
+urlencoding = "2"
+walkdir = "2"
