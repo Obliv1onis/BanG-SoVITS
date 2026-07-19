@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f7faff">
+  <meta name="description" content="BanG Voice Studio — 在 macOS 上使用熟悉的角色声线，生成新的台词。">
+  <title>BanG Voice Studio</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #2f394b;
+      --muted: #748096;
+      --line: rgba(111,139,180,.18);
+      --blue: #90b7e5;
+      --blue-deep: #728ebc;
+      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "PingFang SC", "Noto Sans SC", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      overflow-x: hidden;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 15%, rgba(179,213,246,.5), transparent 31rem),
+        radial-gradient(circle at 88% 78%, rgba(202,214,239,.5), transparent 32rem),
+        #f7faff;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: .55;
+      background-image: linear-gradient(rgba(111,145,189,.045) 1px, transparent 1px), linear-gradient(90deg, rgba(111,145,189,.045) 1px, transparent 1px);
+      background-size: 44px 44px;
+      mask-image: radial-gradient(circle at center, black, transparent 82%);
+    }
+    .shell {
+      position: relative;
+      width: min(1120px, calc(100% - 40px));
+      min-height: 100vh;
+      margin: auto;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+    }
+    header, footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 86px;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; color: inherit; text-decoration: none; }
+    .mark {
+      width: 38px;
+      height: 38px;
+      display: block;
+      object-fit: cover;
+      border: 1px solid rgba(111,139,180,.2);
+      border-radius: 13px;
+      background: #eaf3fc;
+      box-shadow: 0 10px 28px rgba(97,135,183,.2);
+    }
+    .brand strong { display: block; font-size: 14px; letter-spacing: .01em; }
+    .brand small { display: block; margin-top: 2px; color: #9aa5b6; font-size: 9px; letter-spacing: .19em; }
+    .version { color: #98a4b6; font-size: 11px; letter-spacing: .11em; }
+    main { display: grid; place-items: center; padding: 64px 0 90px; }
+    .hero { width: min(820px, 100%); text-align: center; }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      margin: 0 0 25px;
+      color: #74839a;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: .2em;
+    }
+    .eyebrow::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: #82afe0; box-shadow: 0 0 12px #8db8e6; }
+    h1 { margin: 0; font-family: Georgia, "Songti SC", serif; font-size: clamp(48px, 8vw, 86px); font-weight: 500; line-height: .98; letter-spacing: -.055em; }
+    h1 span { color: #91a9cc; background: linear-gradient(100deg, #7f9fc8 8%, #9db5d8 55%, #bdcbe5); background-clip: text; -webkit-background-clip: text; }
+    .lead { max-width: 590px; margin: 27px auto 0; color: var(--muted); font-size: clamp(15px, 2vw, 18px); line-height: 1.8; }
+    .wave { height: 34px; margin: 34px auto 38px; display: flex; justify-content: center; align-items: center; gap: 5px; opacity: .48; }
+    .wave i { display: block; width: 2px; height: var(--h); border-radius: 3px; background: linear-gradient(#78a9dc, #a8bce0); }
+    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; max-width: 670px; margin: auto; }
+    .button {
+      position: relative;
+      min-height: 92px;
+      padding: 20px 23px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      text-align: left;
+      color: var(--ink);
+      text-decoration: none;
+      background: rgba(255,255,255,.7);
+      box-shadow: 0 18px 55px rgba(87,115,153,.11);
+      backdrop-filter: blur(16px);
+      transition: transform .2s ease, border-color .2s ease, background .2s ease;
+    }
+    .button::after { content: "↗"; position: absolute; top: 17px; right: 19px; color: #9aa6b8; font-size: 15px; }
+    .button:hover { transform: translateY(-3px); border-color: rgba(111,145,189,.32); background: rgba(255,255,255,.92); }
+    .button.primary { background: linear-gradient(135deg, rgba(205,229,250,.92), rgba(225,232,248,.84)); border-color: rgba(123,163,208,.28); }
+    .button.pending { cursor: default; }
+    .button.pending::after { content: "···"; }
+    .icon { width: 46px; height: 46px; flex: none; display: grid; place-items: center; border-radius: 14px; color: #7188aa; background: #edf3fa; }
+    .primary .icon { color: white; background: linear-gradient(145deg, #8db9e7, #819ac8); box-shadow: 0 8px 22px rgba(109,147,194,.23); }
+    .icon svg { display: block; width: 24px; height: 24px; }
+    .button > span:not(.icon), .button b, .button > span:not(.icon) span { display: block; }
+    .button b { margin-bottom: 5px; font-size: 15px; font-weight: 600; }
+    .button span { color: #7e899b; font-size: 11px; }
+    .notes { margin-top: 25px; color: #9aa5b5; font-size: 10px; letter-spacing: .04em; }
+    footer { border-top: 1px solid rgba(111,139,180,.12); color: #a0aabb; font-size: 10px; }
+    footer a { color: #8594aa; text-decoration: none; }
+    footer a:hover { color: #5e7392; }
+    @media (max-width: 680px) {
+      .shell { width: min(100% - 26px, 1120px); }
+      header { min-height: 72px; }
+      main { padding: 48px 0 72px; }
+      h1 { font-size: clamp(43px, 14vw, 66px); }
+      .lead { font-size: 14px; }
+      .actions { grid-template-columns: 1fr; }
+      .button { min-height: 84px; border-radius: 17px; }
+      footer { min-height: 70px; gap: 18px; }
+      .version { display: none; }
+    }
+    @media (prefers-reduced-motion: reduce) { .button { transition: none; } }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <a class="brand" href="#" aria-label="BanG Voice Studio 首页">
+        <img class="mark" src="https://raw.githubusercontent.com/Obliv1onis/BanG-SoVITS/main/src-tauri/icons/icon.png" alt="BanG Voice Studio 图标">
+        <span><strong>BanG Voice</strong><small>CHARACTER STUDIO</small></span>
+      </a>
+      <span class="version">macOS · APPLE SILICON</span>
+    </header>
+
+    <main>
+      <section class="hero">
+        <p class="eyebrow">LOCAL CHARACTER VOICE SYNTHESIS</p>
+        <h1><span>BanG Voice Studio</span></h1>
+        <p class="lead">一个在 macOS 上使用 GPT-SoVITS 本地生成 BanG Dream! 角色语音的桌面工具。</p>
+
+        <div class="wave" aria-hidden="true">
+          <i style="--h:7px"></i><i style="--h:14px"></i><i style="--h:25px"></i><i style="--h:12px"></i><i style="--h:31px"></i><i style="--h:18px"></i><i style="--h:9px"></i><i style="--h:22px"></i><i style="--h:33px"></i><i style="--h:16px"></i><i style="--h:27px"></i><i style="--h:11px"></i><i style="--h:20px"></i><i style="--h:8px"></i><i style="--h:14px"></i>
+        </div>
+
+        <div class="actions">
+          <a class="button primary" href="https://github.com/Obliv1onis/BanG-SoVITS" target="_blank" rel="noreferrer">
+            <span class="icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .7a11.5 11.5 0 0 0-3.64 22.4c.58.1.79-.25.79-.56v-2.23c-3.23.7-3.91-1.37-3.91-1.37-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.71.08-.71 1.17.08 1.78 1.2 1.78 1.2 1.04 1.78 2.72 1.27 3.38.97.1-.75.4-1.27.74-1.56-2.58-.3-5.29-1.29-5.29-5.69 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.47.11-3.05 0 0 .97-.31 3.16 1.18a10.94 10.94 0 0 1 5.75 0c2.19-1.49 3.15-1.18 3.15-1.18.63 1.58.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.41-2.72 5.39-5.31 5.68.42.36.79 1.07.79 2.16v3.2c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .7Z"/></svg>
+            </span>
+            <span><b>前往 GitHub</b><span>源码、版本记录与使用说明</span></span>
+          </a>
+
+          <!-- 收到网盘链接后，将下面的 href="#download" 替换为实际地址，并删除 pending 类名。 -->
+          <a class="button pending" href="#download" aria-label="网盘下载即将开放" onclick="return false">
+            <span class="icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M5 15v4a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-4"/></svg>
+            </span>
+            <span><b>网盘下载</b><span>完整安装包 · 即将开放</span></span>
+          </a>
+        </div>
+        <p class="notes">Apple Silicon · macOS 12+ · 本地运行</p>
+      </section>
+    </main>
+
+    <footer>
+      <span>© 2026 BanG Voice Studio</span>
+      <span>非官方项目 · <a href="https://github.com/Obliv1onis/BanG-SoVITS/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT License</a></span>
+    </footer>
+  </div>
+</body>
+</html>
