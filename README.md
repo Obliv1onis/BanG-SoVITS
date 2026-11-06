@@ -1,7 +1,5 @@
 # 此仓库和软件已归档，后续停止更新
 
----
-
 # BanG Voice Studio
 
 面向 macOS 的《BanG Dream!》角色语音生成桌面应用，基于 GPT-SoVITS。本地完成模型加载与语音生成，输入台词和生成结果不会上传到云端。
